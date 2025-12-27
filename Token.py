@@ -8,6 +8,8 @@ import numpy as np
 import cv2
 from textwrap import dedent
 
+from Parser import Parser
+
 load_dotenv()
 
 POPPLER_PATH = os.getenv("POPPLER_PATH")
@@ -422,6 +424,19 @@ def main():
     tokens = tokenizer.tokenize_file()
     img = cv2.imread(path)
     tokenizer._visualize_file(tokens, img.copy())
+
+    for token in tokens:
+        print(token)
+
+    accepted, errors = Parser()(tokens)
+
+    if accepted:
+        print("Form ACCEPTED")
+    else:
+        print("Form REJECTED")
+        for e in errors:
+            print("Error:", e)
+
 
 
 if __name__ == "__main__":
