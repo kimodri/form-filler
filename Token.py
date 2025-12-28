@@ -456,7 +456,9 @@ def main():
     for token in tokens:
         print(token)
 
-    accepted, errors = Parser()(tokens)
+    parser = Parser()
+
+    accepted, errors = parser(tokens)
 
     if accepted:
         print("Form ACCEPTED")
@@ -465,7 +467,7 @@ def main():
         for e in errors:
             print("Error:", e)
 
-
+    print(parser.mappings)
 
 if __name__ == "__main__":
     main()

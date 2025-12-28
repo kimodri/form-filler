@@ -12,6 +12,9 @@ class Parser:
         self.pos = 0
         self.errors = []
 
+        self.mappings = []
+        self.current_section = "Default"
+
         accepted = self._parseDocument()
 
         # must consume everything
@@ -79,13 +82,21 @@ class Parser:
         return ok
 
     # SECTION → SECTION_TITLE SECTION_BODY | SECTION_BODY
+# SECTION → SECTION_TITLE SECTION_BODY | SECTION_BODY
     def _parseSection(self):
         ok = True
-        if self._current().id == Parser.SECTION_TITLE:
-            ok &= self._match(Parser.SECTION_TITLE)
-        ok &= self._parseSectionBody()
-        return ok
 
+        # Optional: Parse the Title
+        if self._current() and self._current().id == Parser.SECTION_TITLE:
+            title_token = self._current() 
+            self.current_section = title_token.value 
+            ok &= self._match(Parser.SECTION_TITLE)
+
+        # MANDATORY: Parse the Body (The Fields)
+        # This is what consumes FIELD_LABEL and NOTE tokens
+        ok &= self._parseSectionBody()
+
+        return ok
     # SECTION_BODY → FORM_ELEMENT_LIST
     def _parseSectionBody(self):
         return self._parseFormElementList()
@@ -113,6 +124,31 @@ class Parser:
     # FIELD → FIELD_LABEL FIELD_SPACE
     def _parseField(self):
         ok = True
+        
+        # 1. Peek at the Label
+        label_token = self._current()
         ok &= self._match(Parser.FIELD_LABEL)
-        ok &= self._match(Parser.FIELD_SPACE)
+        
+        # 2. Peek at the Space (assuming the previous match didn't fail)
+        if ok:
+            space_token = self._current()
+            ok &= self._match(Parser.FIELD_SPACE)
+
+            # 3. SEMANTIC ACTION: Save the relationship
+            if ok: # Only save if both matches succeeded
+                mapping_entry = {
+                    "section": self.current_section,
+                    "label": label_token.value,      # e.g., "Full Name:"
+                    "fill_target": {                 # The coordinates to draw text on
+                        "x": space_token.bbox[0],
+                        "y": space_token.bbox[1],
+                        "w": space_token.bbox[2],
+                        "h": space_token.bbox[3]
+                    }
+                }
+                self.mappings.append(mapping_entry)
         return ok
+    
+    def _print_mappings(self):
+        for i in self.mappings:
+            print(i)
