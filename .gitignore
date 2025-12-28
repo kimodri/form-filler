@@ -1,2 +1,7 @@
 .venv/
 __pycache__/
+forms/
+poppler/
+*.jpg
+.env
+*.ipynb_checkpoints
