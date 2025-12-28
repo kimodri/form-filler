@@ -112,10 +112,9 @@ class Tokenizer:
             textual_tokens = self._process_ocr_data(
                 data,
                 width=page_width,
-                page=page
             )
 
-            visual_tokens = self._get_visual_token(img, page)
+            visual_tokens = self._get_visual_token(img)
 
             final_tokens = self._merge_and_sort(
                 textual_tokens,
@@ -124,7 +123,7 @@ class Tokenizer:
 
             return final_tokens
 
-    def _process_ocr_data(self, data, width, page, gap_threshold=27):
+    def _process_ocr_data(self, data, width, page=0, gap_threshold=27):
         """
         Groups Tesseract words into lines based on Block+Paragraph+Line
         then splits them horizontally if a large gap is detectec.
@@ -308,7 +307,7 @@ class Tokenizer:
         return final_tokens
 
     # OpenCV Implementation
-    def _get_visual_token(self, img, page):
+    def _get_visual_token(self, img, page=0):
 
         # img = cv2.imread(self.file_path)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
