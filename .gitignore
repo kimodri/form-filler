@@ -5,3 +5,4 @@ poppler/
 *.jpg
 .env
 *.ipynb_checkpoints
+*.ipynb

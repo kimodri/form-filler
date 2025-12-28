@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from Token import Tokenizer
+from server.Token import Tokenizer
 
 app = Flask(__name__)
 

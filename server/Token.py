@@ -443,10 +443,10 @@ class Tokenizer:
                 1
             )
     # Save ONCE, after all drawings
-        cv2.imwrite("final_detected1.jpg", img)
+        cv2.imwrite("../detections/final_detected1.jpg", img)
 
 def main():
-    path = "medical_form.jpg"
+    path = "../medical_form.jpg"
     tokenizer = Tokenizer(path)
     print(tokenizer) 
     tokens = tokenizer.tokenize_file()
