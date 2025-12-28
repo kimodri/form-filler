@@ -46,10 +46,6 @@ class Tokenizer:
         valid_ext = ("jpg", "png", "jpeg", "pdf")
         if not self.file_path.endswith(valid_ext):
             raise()
-            
-                # raise(UnexpectedFileError(
-                #     textwrap.dedent(f"The expected file extension for {dataset} is: {expected_ext}")
-                # ))
         else:
             ext = file_path.split(".")[-1]
             return ext
@@ -118,7 +114,7 @@ class Tokenizer:
 
             return all_tokens
 
-        else:
+        else:  # meaning if the file uploaded is not pdf then use OpenCV
             self.img = cv2.imread(self.file_path)
             page_height, page_width = self.img.shape[:2]
 
@@ -175,7 +171,7 @@ class Tokenizer:
             raw_lines[line_id].append(word_info)
 
 
-        # 2. Process each line: Merge words, but split on huge gaps
+        # Process each line: Merge words, but split on huge gaps
         final_tokens = []
 
         for line_id, words in raw_lines.items():
@@ -537,7 +533,6 @@ def main():
     else:
         print("Not Accepted")
     
-
     # print(parser.mappings)
 
 if __name__ == "__main__":
