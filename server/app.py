@@ -23,8 +23,8 @@ def index():
 
 @app.route('/process')
 def process():
-    path = ""
-    # path = "../form_images/onboarding_form.png"
+    # path = ""
+    path = "../form_images/onboarding_form.png"
 
     # Tokenize the uploaded file
     tokenizer = Tokenizer(path)
