@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CFG Auto-Fill Document System</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../static/styles.css">
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -94,24 +94,24 @@
                     <p class="card-subtitle">Store your information once, use it everytime.</p>
                 </div>
                 <div class="card-body">
-                    <form id="profileForm">
+                    <form id="profileForm" action="/submit" method="post">
                         <!-- Personal Information -->
                         <div class="form-section">
                             <h3 class="section-heading">Personal Information</h3>
                             <div class="form-grid">
                                 <div class="field-group">
                                     <label class="field-label required">Full Name</label>
-                                    <input type="text" id="fullName" class="field-input" placeholder="Juan Dela Cruz">
+                                    <input type="text" id="fullName" class="field-input" name="fullname" placeholder="Juan Dela Cruz">
                                 </div>
                                 <div class="field-group">
                                     <label class="field-label required">Date of Birth</label>
-                                    <input type="date" id="dateOfBirth" class="field-input"
+                                    <input type="date" id="dateOfBirth" name="dateofbirth" class="field-input"
        min="1900-01-01" max="2026-12-31">
 
                                 </div>
                                 <div class="field-group">
                                     <label class="field-label">Gender</label>
-                                    <select id="gender" class="field-input">
+                                    <select id="gender" name="gender" class="field-input">
                                         <option value="">Select...</option>
                                         <option value="male">Male</option>
                                         <option value="female">Female</option>
@@ -119,7 +119,7 @@
                                 </div>
                                 <div class="field-group">
                                     <label class="field-label">Nationality</label>
-                                    <input type="text" id="nationality" class="field-input" placeholder="Filipino">
+                                    <input type="text" id="nationality" class="field-input" name="nationality" placeholder="Filipino">
                                 </div>
                             </div>
                         </div>
@@ -130,19 +130,19 @@
                             <div class="form-grid">
                                 <div class="field-group full-width">
                                     <label class="field-label required">Email Address</label>
-                                    <input type="email" id="email" class="field-input" placeholder="juan.delacruz@email.com">
+                                    <input type="email" id="email" name="email" class="field-input" placeholder="juan.delacruz@email.com">
                                 </div>
                                 <div class="field-group">
                                     <label class="field-label required">Phone Number</label>
-                                    <input type="tel" id="phone" class="field-input" placeholder="+63 912 345 6789">
+                                    <input type="tel" id="phone" name="phonenumber" class="field-input" placeholder="+63 912 345 6789">
                                 </div>
                                 <div class="field-group">
                                     <label class="field-label">Alternate Phone</label>
-                                    <input type="tel" id="alternatePhone" class="field-input" placeholder="+63 912 345 6789">
+                                    <input type="tel" id="alternatePhone" name="alternatephone" class="field-input" placeholder="+63 912 345 6789">
                                 </div>
                                 <div class="field-group full-width">
                                     <label class="field-label required">Complete Address</label>
-                                    <textarea id="address" class="field-textarea" rows="3" placeholder="House No., Street, Barangay, City, Province, Postal Code"></textarea>
+                                    <textarea id="address" name="address" class="field-textarea" rows="3" placeholder="House No., Street, Barangay, City, Province, Postal Code"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -153,7 +153,7 @@
                             <div class="form-grid">
                                 <div class="field-group">
                                     <label class="field-label">Highest Education Level</label>
-                                    <select id="educationLevel" class="field-input">
+                                    <select id="educationLevel" name="highesteducationlevel" class="field-input">
                                         <option value="">Select...</option>
                                         <option value="highschool">High School</option>
                                         <option value="undergraduate">Undergraduate</option>
@@ -164,15 +164,15 @@
                                 </div>
                                 <div class="field-group">
                                     <label class="field-label">School/University</label>
-                                    <input type="text" id="school" class="field-input" placeholder="Polytechnic University of the Philippines">
+                                    <input type="text" id="school" name="school" class="field-input" placeholder="Polytechnic University of the Philippines">
                                 </div>
                                 <div class="field-group">
                                     <label class="field-label">Course/Program</label>
-                                    <input type="text" id="course" class="field-input" placeholder="Bachelor of Science in Computer Science">
+                                    <input type="text" id="course" name="course" class="field-input" placeholder="Bachelor of Science in Computer Science">
                                 </div>
                                 <div class="field-group">
                                     <label class="field-label">Year Graduated</label>
-                                    <input type="number" id="yearGraduated" class="field-input" placeholder="2025" min="1950" max="2050">
+                                    <input type="number" id="yearGraduated" name="yeargraduated" class="field-input" placeholder="2025" min="1950" max="2050">
                                 </div>
                             </div>
                         </div>
@@ -183,19 +183,19 @@
                             <div class="form-grid">
                                 <div class="field-group">
                                     <label class="field-label">Current Employer</label>
-                                    <input type="text" id="employer" class="field-input" placeholder="Company Name">
+                                    <input type="text" id="employer" name="currentemployer" class="field-input" placeholder="Company Name">
                                 </div>
                                 <div class="field-group">
                                     <label class="field-label">Position/Job Title</label>
-                                    <input type="text" id="position" class="field-input" placeholder="Software Engineer">
+                                    <input type="text" id="position" name="jobtitle" class="field-input" placeholder="Software Engineer">
                                 </div>
                                 <div class="field-group">
                                     <label class="field-label">Years of Experience</label>
-                                    <input type="number" id="experience" class="field-input" placeholder="5" min="0">
+                                    <input type="number" id="experience" name="yearsofexperience" class="field-input" placeholder="5" min="0">
                                 </div>
                                 <div class="field-group">
                                     <label class="field-label">Monthly Salary</label>
-                                    <input type="number" id="salary" class="field-input" placeholder="50000" min="0">
+                                    <input type="number" id="salary" name="monthlysalary" class="field-input" placeholder="50000" min="0">
                                 </div>
                             </div>
                         </div>
@@ -206,19 +206,19 @@
                             <div class="form-grid">
                                 <div class="field-group">
                                     <label class="field-label">SSS Number</label>
-                                    <input type="text" id="sssNumber" class="field-input" placeholder="00-0000000-0">
+                                    <input type="text" id="sssNumber" name="sssnumber" class="field-input" placeholder="00-0000000-0">
                                 </div>
                                 <div class="field-group">
                                     <label class="field-label">TIN Number</label>
-                                    <input type="text" id="tinNumber" class="field-input" placeholder="000-000-000-000">
+                                    <input type="text" id="tinNumber" name="tinnumber" class="field-input" placeholder="000-000-000-000">
                                 </div>
                                 <div class="field-group">
                                     <label class="field-label">PhilHealth Number</label>
-                                    <input type="text" id="philhealthNumber" class="field-input" placeholder="00-000000000-0">
+                                    <input type="text" id="philhealthNumber" name="philhealthnumber" class="field-input" placeholder="00-000000000-0">
                                 </div>
                                 <div class="field-group">
                                     <label class="field-label">Pag-IBIG Number</label>
-                                    <input type="text" id="pagibigNumber" class="field-input" placeholder="0000-0000-0000">
+                                    <input type="text" id="pagibigNumber" name="pagibignumber" class="field-input" placeholder="0000-0000-0000">
                                 </div>
                             </div>
                         </div>
@@ -489,6 +489,6 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="../static/script.js"></script>
 </body>
 </html>
