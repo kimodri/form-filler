@@ -26,7 +26,6 @@ class Parser:
         return accepted and len(self.errors) == 0, self.errors
 
     # Utilities
-
     def _current(self):
         if self.pos < len(self.tokens):
             return self.tokens[self.pos]
@@ -48,7 +47,6 @@ class Parser:
         return False
 
     # Panic Recovery
-
     def _panicRecovery(self):
         """
         Skip tokens until a synchronizing token
@@ -59,7 +57,6 @@ class Parser:
             self._advance()
 
     # Grammar
-
     # DOCUMENT → FORM_TITLE SECTION_LIST
     def _parseDocument(self):
         ok = True
@@ -83,7 +80,6 @@ class Parser:
         return ok
 
     # SECTION → SECTION_TITLE SECTION_BODY | SECTION_BODY
-# SECTION → SECTION_TITLE SECTION_BODY | SECTION_BODY
     def _parseSection(self):
         ok = True
 

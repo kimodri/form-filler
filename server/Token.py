@@ -2,7 +2,6 @@ from pdf2image import convert_from_path
 import os
 import pytesseract
 from pytesseract import Output
-import pandas as pd
 from dotenv import load_dotenv
 import numpy as np
 import cv2
