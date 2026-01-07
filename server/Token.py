@@ -493,7 +493,9 @@ def main():
     # path = "../form_images/bg_verification_form.png"
     # path = "../form_images/employment_application_form.png"
     # path = "../form_images/contact_form.png"
-    path = "../form_images/onboarding_form.png"
+    # path = "../form_images/onboarding_form.png"
+
+    path = "../onboarding_form.pdf"
 
     # path = "../medical_form.jpg"
     
