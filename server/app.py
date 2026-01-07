@@ -1,110 +1,155 @@
 import os
-from flask import Flask, render_template, session, redirect, request, jsonify
+from flask import Flask, render_template, session, request, send_file
+from werkzeug.utils import secure_filename
+
 from Token import Tokenizer
 from Parser import Parser
-from database import init_db, get_db
+from Generator import Generator
+from database import init_db
 
-app = Flask(__name__)
-app.secret_key = "my_secret_key"  
+KEY_MAPPING = {
+    "fullName": "Full Name",
+    "dateOfBirth": "Date of Birth",
+    "gender": "Gender",
+    "nationality": "Nationality",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "alternatePhone": "Alternate Phone Number",
+    "address": "Complete Address",
+    "currentEmployer": "Current Employer",
+    "jobTitle": "Job Title",
+    "monthlySalary": "Monthly Salary",
+    "sssNumber": "SSS Number",
+    "tinNumber": "TIN Number",
+    "philHealthNumber": "PhilHealth Number",
+    "pagibigNumber": "Pag-IBIG Number",
+}
 
-# Point to the root directory (one level up from /server)
+
+# --------------------
+# App setup
+# --------------------
 base_dir = os.path.abspath('..')
 template_dir = os.path.join(base_dir, 'templates')
 static_dir = os.path.join(base_dir, 'static')
 
-app = Flask(__name__, 
-            template_folder=template_dir, 
-            static_folder=static_dir)
+app = Flask(
+    __name__,
+    template_folder=template_dir,
+    static_folder=static_dir
+)
 
-@app.route('/')
+app.secret_key = "my_secret_key"
+
+UPLOAD_FOLDER = os.path.join(base_dir, "uploaded_files")
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "pdf"}
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# --------------------
+# Routes
+# --------------------
+@app.route("/")
 def index():
-    print(session.get("fullname"))
-    return render_template('index.html')
+    return render_template("index.html")
 
 
-@app.route('/process')
+@app.route("/upload", methods=["POST"])
+def upload():
+    file = request.files.get("document")
+    if not file or file.filename == "":
+        return {"error": "No file uploaded"}, 400
+
+    if not allowed_file(file.filename):
+        return {"error": "Invalid file type"}, 400
+
+    filename = secure_filename(file.filename)
+    save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    file.save(save_path)
+
+    session["save_path"] = os.path.abspath(save_path)
+    session.modified = True
+
+    return {"status": "ok", "filename": filename}, 200
+
+
+
+@app.route("/submit", methods=["POST"])
+def submit_profile():
+    data = request.get_json()
+    if not data:
+        return {"error": "No data received"}, 400
+
+    # Map keys to what Generator expects
+    session["user_data"] = {KEY_MAPPING[k]: v for k, v in data.items() if k in KEY_MAPPING}
+    session.modified = True
+    return {"status": "ok"}, 200
+
+@app.route("/clear_profile", methods=["POST"])
+def clear_profile():
+    session.pop("user_data", None)
+    session.modified = True
+    return {"status": "ok"}, 200
+
+@app.route("/get_profile")
+def get_profile():
+    return {"user_data": session.get("user_data")}
+
+
+
+@app.route("/process", methods=["POST"])
 def process():
-    # path = ""
-    path = "../form_images/onboarding_form.png"
+    path = session.get("save_path")
+    user = session.get("user_data")
 
-    # Tokenize the uploaded file
+    if not path or not os.path.exists(path):
+        return {"errors": ["Uploaded file not found"]}, 400
+
+    if not user:
+        return {"errors": ["User data not submitted"]}, 400
+
+    # 1. Tokenize (PDF handled internally)
     tokenizer = Tokenizer(path)
-    try:
-        tokens, height_width_dim = tokenizer.tokenize_file()  # Add error in the tokens
-    except Exception as e:
-        print(e)
+    tokens, dimensions = tokenizer.tokenize_file()
 
-    # Parse the tokens taken from the previous step
+    # 2. Parse
     parser = Parser()
     accepted, errors = parser(tokens)
 
-    if accepted:
-        # Dimensions
+    if not accepted:
+        return {"errors": errors}, 400
 
-        # Serialize tokens - assuming tokens are objects with attributes
-        serialized_tokens = [
-            {
-                'id': token.id,
-                'type': token.type,
-                'value': token.value,
-                'x': token.bbox[0],
-                'y': token.bbox[1],
-                'w': token.bbox[2],
-                'h': token.bbox[3],
-                'page': token.page
-            }
-            for token in tokens
-        ]
-        
-        # Get mappings from parser (adjust based on your Parser implementation)
-        mappings = parser.mappings  # or however you access the mappings
-        
-        return jsonify({
-            'success': True,
-            'height_width_dim': height_width_dim,
-            'tokens': serialized_tokens,
-            'mappings': mappings,
-        }), 200
-    else:
-        return jsonify({
-            'success': False,
-            'errors': errors
-        }), 400
+    # 3. Generate filled form image
+    output_path = os.path.join(
+        os.path.dirname(path),
+        "filled_out_form.jpg"
+    )
+
+    gen = Generator()
+    gen.generate(
+        path,
+        parser.mappings,
+        user,
+        output_path
+    )
+
+    # 4. Return image (NOT JSON)
+    return send_file(
+        output_path,
+        mimetype="image/jpeg",
+        as_attachment=False
+    )
 
 
-# Route for when analyze with OCR 
-# @app.route('/submit', methods=["POST"])
-# def submit():
-#     print("Got here!")
-
-#     names = [
-#         "fullname",
-#         "dateofbirth",
-#         "gender",
-#         "nationality",
-#         "email",
-#         "phonenumber",
-#         "alternatephone",
-#         "address",
-#         "highesteducationlevel",
-#         "school",
-#         "course",
-#         "yeargraduated",
-#         "currentemployer",
-#         "jobtitle",
-#         "yearsofexperience",
-#         "monthlysalary",
-#         "sssnumber",
-#         "tinnumber",
-#         "philhealthnumber",
-#         "pagibignumber"
-#     ]
-
-#     for name in names:
-#         session[name] = request.form.get(name)
-
-#     return redirect("/")
-
+# --------------------
+# Main
+# --------------------
 if __name__ == "__main__":
-    init_db
+    init_db()
     app.run(debug=True)

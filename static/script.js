@@ -113,18 +113,16 @@ const FIELD_MAPPINGS = {
 
 
 // Profile Manager
+// Profile Manager with Session Support
 class ProfileManager {
     constructor() {
-        this.db = new ProfileDatabase();
         this.form = document.getElementById('profileForm');
         this.init();
     }
 
     init() {
-        // Load existing profile if available
-        if (this.db.hasProfile()) {
-            this.populateForm(this.db.getProfile());
-        }
+        // Load session data from server when page loads
+        this.loadProfile();
 
         // Form submission
         this.form.addEventListener('submit', (e) => {
@@ -139,72 +137,82 @@ class ProfileManager {
     }
 
     collectFormData() {
-        const formData = {};
+        const data = {};
         const inputs = this.form.querySelectorAll('input, select, textarea');
-        
         inputs.forEach(input => {
-            if (input.value.trim()) {
-                formData[input.id] = input.value.trim();
-            }
+            if (input.value.trim()) data[input.id] = input.value.trim();
         });
-
-        return formData;
+        return data;
     }
 
-    saveProfile() {
-        const data = this.collectFormData();
-        
-        // Validate required fields
-        const requiredFields = ['fullName', 'email', 'phone', 'address',];
-        const missing = requiredFields.filter(field => !data[field]);
+    async loadProfile() {
+        try {
+            const res = await fetch('/get_profile');
+            if (!res.ok) return;
 
-        if (missing.length > 0) {
-            showToast('Please fill in all required fields', 'error');
+            const data = await res.json();
+            if (!data.user_data) return;
+
+            Object.keys(data.user_data).forEach(key => {
+                const input = document.getElementById(key);
+                if (input) input.value = data.user_data[key];
+            });
+        } catch (err) {
+            console.error('Failed to load session profile', err);
+        }
+    }
+
+    async saveProfile() {
+        const data = this.collectFormData();
+
+        // Validate required fields
+        const required = ['fullName', 'email', 'phone', 'address'];
+        const missing = required.filter(f => !data[f]);
+        if (missing.length) {
+            alert('Please fill all required fields: ' + missing.join(', '));
             return;
         }
 
-        this.db.saveProfile(data);
-        showModal('profileSavedModal');
-    }
+        try {
+            const res = await fetch('/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
 
-    populateForm(data) {
-        Object.keys(data).forEach(key => {
-            const input = document.getElementById(key);
-            if (input) {
-                input.value = data[key];
+            if (!res.ok) {
+                const payload = await res.json().catch(() => ({}));
+                alert(payload.error || 'Profile save failed');
+                return;
             }
-        });
+
+            alert('Profile saved to session!');
+        } catch (err) {
+            console.error('saveProfile error', err);
+            alert('Server error while saving profile');
+        }
     }
 
- clearForm() {
-    // New behavior: only clears inputs, no popup, no data deletion
-    const inputs = this.form.querySelectorAll('input, select, textarea');
-    
-    inputs.forEach(input => {
-        input.value = "";
-    });
+    async clearForm() {
+        // Clear HTML fields
+        const inputs = this.form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => input.value = '');
 
-    showToast("Form cleared!");
-}
-}
-
-// Clears ALL stored profile data (used only in Edit Data page)
-function clearStoredProfileData() {
-    if (!confirm("Are you sure you want to delete ALL saved profile data? This cannot be undone.")) {
-        return;
+        // Clear server session
+        try {
+            const res = await fetch('/clear_profile', { method: 'POST' });
+            if (res.ok) alert('Profile cleared from session!');
+        } catch (err) {
+            console.error('Failed to clear session', err);
+        }
     }
-
-    // Uses your existing KC_Database class
-    const db = new KC_Database();
-    db.clearProfile();
-
-    // Show your existing red popup
-    showModal("profileClearedModal");
-
-    // Optional: Clear edit form inputs after wipe
-    const editInputs = document.querySelectorAll('#editProfile-tab input, #editProfile-tab textarea, #editProfile-tab select');
-    editInputs.forEach(input => input.value = "");
 }
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    new ProfileManager();
+});
+
 
 
 // Document Upload Manager
@@ -305,28 +313,60 @@ class DocumentUploadManager {
         return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
     }
 
-    async processDocument() {
-        if (!this.db.hasProfile()) {
-            showToast('Please create your profile first', 'error');
+async processDocument() {
+    if (!this.db.hasProfile()) {
+        showToast('Please create your profile first', 'error');
+        return;
+    }
+
+    if (!this.uploadedFile) {
+        showToast('Please upload a document first!', 'error');
+        return;
+    }
+
+    const statusDiv = document.getElementById('processingStatus');
+    statusDiv.style.display = 'block';
+    statusDiv.innerHTML = `<span>Processing document...</span>`;
+
+    try {
+        const res = await fetch("/process", { method: "POST" });
+        if (!res.ok) {
+            const data = await res.json();
+            showToast(data.errors?.join(',') || "Processing failed", "error");
             return;
         }
 
-        const statusDiv = document.getElementById('processingStatus');
-        statusDiv.style.display = 'block';
-        statusDiv.innerHTML = `
-            <div class="status-item">
-                <div class="status-icon processing">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <circle cx="12" cy="12" r="10"/>
-                    </svg>
-                </div>
-                <span>Analyzing document with OCR...</span>
+        // Convert response to blob
+        const blob = await res.blob();
+        const imgUrl = URL.createObjectURL(blob);
+
+        // Show preview
+        document.getElementById('filledDocument').innerHTML = `
+            <div style="text-align:center;">
+                <img src="${imgUrl}" style="max-width:100%; margin-bottom:1rem"/>
+                <br/>
+                <button id="downloadFilledFormBtn">Download Filled Form</button>
             </div>
         `;
 
-        // Simulate OCR processing
-        await this.simulateOCR();
+        // Download functionality
+        document.getElementById('downloadFilledFormBtn').addEventListener('click', () => {
+            const a = document.createElement('a');
+            a.href = imgUrl;
+            a.download = 'filled_form.jpg';  // filename for download
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+
+        showToast("Document processed successfully!", "success");
+
+    } catch (err) {
+        console.error(err);
+        showToast("Server error while processing document", "error");
     }
+}
+
 
     async simulateOCR() {
         // Simulate processing delay
@@ -595,17 +635,40 @@ function loadProfileForEditing() {
 }
 
 // Re-save edited data
-document.getElementById("saveEditedProfileBtn").addEventListener("click", () => {
+document.getElementById("saveEditedProfileBtn").addEventListener("click", async () => {
     const inputs = document.querySelectorAll("#profileForm input, #profileForm textarea, #profileForm select");
     const updatedData = {};
 
     inputs.forEach(input => {
-        updatedData[input.id] = input.value;
+        updatedData[input.id] = input.value.trim();
     });
 
-    localStorage.setItem("profileData", JSON.stringify(updatedData));
-    showToast("Profile updated successfully!");
+    // Validate required fields
+    const required = ["fullName", "email", "phone", "address"];
+    const missing = required.filter(f => !updatedData[f]);
+    if (missing.length) {
+        showToast("Please fill all required fields: " + missing.join(", "), "error");
+        return;
+    }
+
+    try {
+        const res = await fetch("/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedData)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            showToast(data.message || "Profile submission failed", "error");
+            return;
+        }
+        showToast("Profile saved successfully!", "success");
+    } catch (err) {
+        console.error(err);
+        showToast("Server error while submitting profile", "error");
+    }
 });
+
 
 
 // Clear ALL stored profile data (now with the old popup)
@@ -628,3 +691,31 @@ function clearStoredProfileData() {
         showToast("Stored profile data deleted!");
     };
 }
+
+fileInput.addEventListener("change", async () => {
+    const uploadedFile = fileInput.files[0];
+    if (!uploadedFile) return;
+
+    const formData = new FormData();
+    formData.append("document", uploadedFile); // must match Flask
+
+
+    try {
+        const res = await fetch("/upload", { method: "POST", body: formData });
+        const data = await res.json();
+
+        if (!res.ok) {
+            showToast(data.error || "Upload failed", "error");
+            return;
+        }
+
+        window.currentDocument = { file: data.filename }; // optional for UI
+        showToast("File uploaded successfully!", "success");
+
+    } catch (err) {
+        console.error(err);
+        showToast("Upload failed due to server error", "error");
+    }
+});
+
+
