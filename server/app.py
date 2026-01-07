@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, session, redirect, request, jsonify
 from Token import Tokenizer
 from Parser import Parser
+from database import init_db, get_db
 
 app = Flask(__name__)
 app.secret_key = "my_secret_key"  
@@ -105,4 +106,5 @@ def process():
 #     return redirect("/")
 
 if __name__ == "__main__":
+    init_db
     app.run(debug=True)
