@@ -122,16 +122,16 @@ class Parser:
     def _parseField(self):
         ok = True
         
-        # 1. Peek at the Label
+        # Peek at the Label
         label_token = self._current()
         ok &= self._match(Parser.FIELD_LABEL)
         
-        # 2. Peek at the Space (assuming the previous match didn't fail)
+        # Peek at the Space (assuming the previous match didn't fail)
         if ok:
             space_token = self._current()
             ok &= self._match(Parser.FIELD_SPACE)
 
-            # 3. SEMANTIC ACTION: Save the relationship
+            # SEMANTIC ACTION: Save the relationship
             if ok: # Only save if both matches succeeded
                 mapping_entry = {
                     "section": self.current_section,
