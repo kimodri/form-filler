@@ -5,7 +5,17 @@ from werkzeug.utils import secure_filename
 from Token import Tokenizer
 from Parser import Parser
 from Generator import Generator
-from database import init_db
+import pytesseract
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+POPPLER_PATH = os.getenv("POPPLER_PATH")
+
+tesseract_path = os.getenv("PYTESSERACT_PATH")
+if tesseract_path:
+    pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 KEY_MAPPING = {
     "fullName": "Full Name",
@@ -34,9 +44,10 @@ KEY_MAPPING = {
 # --------------------
 # App setup
 # --------------------
-base_dir = os.path.abspath('..')
-template_dir = os.path.join(base_dir, 'templates')
-static_dir = os.path.join(base_dir, 'static')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+template_dir = os.path.join(BASE_DIR, '..', 'templates')
+static_dir = os.path.join(BASE_DIR, '..', 'static')
 
 app = Flask(
     __name__,
@@ -44,9 +55,10 @@ app = Flask(
     static_folder=static_dir
 )
 
+
 app.secret_key = "my_secret_key"
 
-UPLOAD_FOLDER = os.path.join(base_dir, "uploaded_files")
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploaded_files")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "pdf"}
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -124,7 +136,7 @@ def process():
         return {"errors": ["User data not submitted"]}, 400
 
     # 1. Tokenize (PDF handled internally)
-    tokenizer = Tokenizer(path)
+    tokenizer = Tokenizer(path, poppler_path=POPPLER_PATH)
     tokens, dimensions = tokenizer.tokenize_file()
 
     # 2. Parse
@@ -140,7 +152,7 @@ def process():
         "filled_out_form.jpg"
     )
 
-    gen = Generator()
+    gen = Generator(poppler_path=POPPLER_PATH)
     gen.generate(
         path,
         parser.mappings,
@@ -160,4 +172,5 @@ def process():
 # Main
 # --------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
+

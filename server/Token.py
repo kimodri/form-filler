@@ -10,11 +10,6 @@ from textwrap import dedent
 from Parser import Parser
 from Generator import Generator
 
-load_dotenv()
-
-POPPLER_PATH = os.getenv("POPPLER_PATH")
-pytesseract.pytesseract.tesseract_cmd = os.getenv("PYTESSERACT_PATH")
-
 class Token:
     def __init__(self, id, type, value, bbox, page=0):
         self.id = id
@@ -29,10 +24,9 @@ class Token:
 
 class Tokenizer:
 
-    def __init__(self, file_path, poppler_path=POPPLER_PATH, pytesseract_path=pytesseract.pytesseract.tesseract_cmd):
+    def __init__(self, file_path, poppler_path=None):
         self.file_path = file_path
         self.poppler_path  = poppler_path
-        self.pytesseract_path = pytesseract_path
         self.img = None
 
     def __str__(self):

@@ -1,14 +1,10 @@
 from PIL import Image, ImageDraw, ImageFont
 from pdf2image import convert_from_path
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-POPPLER_PATH = os.getenv("POPPLER_PATH")
 
 class Generator:
-    def __init__(self, font_path="arial.ttf", font_size=30, poppler_path=POPPLER_PATH):
+    def __init__(self, font_path="arial.ttf", font_size=30, poppler_path=None):
         self.font_size = font_size
         self.font_path = font_path
         self.poppler_path = poppler_path
