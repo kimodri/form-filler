@@ -135,9 +135,6 @@ PYTESSERACT_PATH=C:\Program Files\Tesseract-OCR\tesseract.exe
 
 ---
 
-
----
-
 ## Disclaimer
 
 This project uses Flask’s built-in development server.
