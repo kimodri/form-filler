@@ -15,13 +15,13 @@ KEY_MAPPING = {
     "email": "Email Address",
     "phone": "Phone Number",
     "alternatePhone": "Alternate Phone Number",
-    "address": "Complete Address",
+    "address": "Address",
     "currentEmployer": "Current Employer",
     "jobTitle": "Job Title",
     "monthlySalary": "Monthly Salary",
     "sssNumber": "SSS Number",
     "tinNumber": "TIN Number",
-    "philHealthNumber": "PhilHealth Number",
+    "philhealthNumber": "PhilHealth Number",
     "pagibigNumber": "Pag-IBIG Number",
 }
 
