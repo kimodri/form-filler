@@ -16,13 +16,18 @@ KEY_MAPPING = {
     "phone": "Phone Number",
     "alternatePhone": "Alternate Phone Number",
     "address": "Address",
-    "currentEmployer": "Current Employer",
-    "jobTitle": "Job Title",
+    "employer": "Current Employer",
+    "position": "Job Title",
     "monthlySalary": "Monthly Salary",
+    "experience": "experience",
     "sssNumber": "SSS Number",
     "tinNumber": "TIN Number",
     "philhealthNumber": "PhilHealth Number",
     "pagibigNumber": "Pag-IBIG Number",
+    "educationLevel": "Highest Education Level",
+    "school": "School",
+    "course": "Course/Program",
+    "yearGraduated": "Year Graduated"
 }
 
 
@@ -58,6 +63,10 @@ def allowed_file(filename):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/landing")
+def landing():
+    return render_template("landing.html")
 
 
 @app.route("/upload", methods=["POST"])
